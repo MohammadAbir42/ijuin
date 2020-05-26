@@ -1,8 +1,9 @@
 import { Repository, EntityRepository } from "typeorm";
+import * as bcrypt from 'bcrypt'
 import { User } from "./user.entity";
 import { AuthCredentialsDto } from "./dto/authCredentials.dto";
 import { UserRole } from "./userRole.enum";
-import { InternalServerErrorException } from "@nestjs/common";
+import { InternalServerErrorException, ConflictException } from "@nestjs/common";
 
 
 @EntityRepository(User)
@@ -12,13 +13,18 @@ export class UserRepository extends Repository<User> {
 
         const user = this.create()
         user.username = username
-        user.password = password
+        user.salt = await bcrypt.genSalt()
+        user.password = await this.hashPassword(password, user.salt)
         user.role = UserRole.USER
         
         try {
             await user.save()
         } catch (error) {
-            throw new InternalServerErrorException()
+            if (error.code === '23505') { // duplicate username error code
+                throw new ConflictException(`Username '${username}' already exists.`)
+            } else {
+                throw new InternalServerErrorException()
+            }
         }
     }
 
@@ -26,10 +32,15 @@ export class UserRepository extends Repository<User> {
         const { username, password } = authCredDTO
         const user = await this.findOne({ username })
 
-        if (user) {
+        if (user && await user.validatePassword(password)) {
             return username
         } else {
             return null
         }
+    }
+
+
+    async hashPassword (password: string, salt: string): Promise<string> {
+        return bcrypt.hash(password, salt)
     }
 }
