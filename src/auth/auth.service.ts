@@ -1,9 +1,15 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from './user.repository';
 import { AuthCredentialsDto } from './dto/authCredentials.dto';
 import { JwtPayload } from './jwt/jwtPayload.interface';
 import { JwtService } from '@nestjs/jwt';
+import { MailerService } from '@nestjs-modules/mailer';
+import { AuthSignUpCredentialsDto } from './dto/authSIgnUpCredentials.dto';
+import { JwtSignUpPayload } from './jwt/jwtSignUpPayload.interface';
+import { AuthPasswordResetDto } from './dto/authPasswordResetDto.dto';
+import { AuthPasswordChangeDto } from './dto/authPasswordChangeDto.dto';
+import { User } from './user.entity';
 
 @Injectable()
 export class AuthService {
@@ -11,10 +17,33 @@ export class AuthService {
         @InjectRepository(UserRepository)
         private userRepository: UserRepository,
         private jwtService: JwtService,
+        private readonly mailerService: MailerService,
     ) {}
 
-    async signUp (authCredDTO: AuthCredentialsDto): Promise<void> {
-        return this.userRepository.signUp(authCredDTO)
+    async preSignUp(authSignUpCredDTO: AuthSignUpCredentialsDto): Promise<{ accessToken: string }> {
+        const { email, username, password } = authSignUpCredDTO
+        
+        if (!await this.userRepository.findOne({ email }) && !await this.userRepository.findOne({ username })) {
+            const payload: JwtSignUpPayload = { email, username, password }
+            const accessToken = await this.jwtService.sign(payload)
+            await this.mailerService.sendMail({
+                to: `${email}`,
+                from: 'abirhassan142442@gmail.com',
+                subject: 'Testing NestJs Mailer Service',
+                text: `${username}'s access token: ${{accessToken}}`,
+                html: `<h3>${username}'s access token: </h3><p>${accessToken}</p>`
+            }).then().catch()
+            return {accessToken}
+        } else {
+            throw new ConflictException()
+        }
+    }
+
+    async signUp (token: string): Promise<void> {
+        const { email, username, password } = await this.jwtService.verify(token)
+
+        const authSignUpCredDTO: AuthSignUpCredentialsDto = { email, username, password }
+        return this.userRepository.signUp(authSignUpCredDTO)
     }
 
     async signIn (authCredDTO: AuthCredentialsDto): Promise<{ accessToken: string }> {
@@ -28,5 +57,46 @@ export class AuthService {
         const accessToken = await this.jwtService.sign(payload)
 
         return { accessToken }
+    }
+
+    async tryResetPassword(authPasswordReset: AuthPasswordResetDto): Promise<{ accessToken: string }> {
+        const { username } = authPasswordReset
+        const user = await this.userRepository.findOne({ username })
+        if (user) {
+            const email = user.email
+            const payload: JwtPayload = { username }
+            const accessToken = await this.jwtService.sign(payload)
+            await this.mailerService.sendMail({
+                to: `${email}`,
+                from: 'abirhassan142442@gmail.com',
+                subject: 'Testing NestJs Mailer Service',
+                text: `${username}'s access token: ${{ accessToken }}`,
+                html: `<h3>${username}'s access token for reset password: </h3><p>${accessToken}</p>`
+            }).then().catch()
+            return { accessToken }
+        } else {
+            throw new UnauthorizedException()
+        }
+        
+    }
+
+    async resetPassword(token: string): Promise<void> {
+        const { username } = await this.jwtService.verify(token)
+        const user = await this.userRepository.findOne({ username })
+        if (user) {
+            try {
+                user.password = await this.userRepository.hashPassword(username, user.salt)
+                await user.save()
+            } catch (error) {
+                throw new InternalServerErrorException()
+            }
+        } else {
+            throw new UnauthorizedException()
+        }
+    }
+
+    async changePassword(authPasswordChangeDTO: AuthPasswordChangeDto, token: string): Promise<void> {
+        const user = this.jwtService.verify(token)
+        return this.userRepository.changePassword(authPasswordChangeDTO, user)
     }
 }

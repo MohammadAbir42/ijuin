@@ -13,7 +13,7 @@ import { JwtStrategy } from './jwt/jwtStrategy.strategy';
     JwtModule.register({
       secret: 'HanazawaKana',
       signOptions: {
-        expiresIn: 3600
+        expiresIn: 3600 // make it 7 days
       },
     }),
     TypeOrmModule.forFeature([UserRepository]),

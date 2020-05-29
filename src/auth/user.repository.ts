@@ -3,16 +3,19 @@ import * as bcrypt from 'bcrypt'
 import { User } from "./user.entity";
 import { AuthCredentialsDto } from "./dto/authCredentials.dto";
 import { UserRole } from "./userRole.enum";
-import { InternalServerErrorException, ConflictException } from "@nestjs/common";
+import { InternalServerErrorException, ConflictException, UnauthorizedException } from "@nestjs/common";
+import { AuthSignUpCredentialsDto } from "./dto/authSIgnUpCredentials.dto";
+import { AuthPasswordChangeDto } from "./dto/authPasswordChangeDto.dto";
 
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
-    async signUp (authCredDTO: AuthCredentialsDto): Promise<void> {
-        const { username, password } = authCredDTO
+    async signUp (authSignUpCredDTO: AuthSignUpCredentialsDto): Promise<void> {
+        const { email, username, password } = authSignUpCredDTO
 
         const user = this.create()
-        user.username = username
+        user.email = email.trim()
+        user.username = username.trim()
         user.salt = await bcrypt.genSalt()
         user.password = await this.hashPassword(password, user.salt)
         user.role = UserRole.USER
@@ -39,6 +42,28 @@ export class UserRepository extends Repository<User> {
         }
     }
 
+    async changePassword (authPasswordChangeDTO: AuthPasswordChangeDto, user: User): Promise<void> {
+        const { password, newPassword } = authPasswordChangeDTO
+        const { username } = user
+        const actualUser = await this.findOne({ username })
+        if (!actualUser) {
+            throw new UnauthorizedException()
+        } else {
+            const oldPassword = actualUser.password
+            const getPassword = await this.hashPassword(password, actualUser.salt)
+            if (oldPassword === getPassword) {
+                actualUser.password = await this.hashPassword(newPassword, actualUser.salt)
+                try {
+                    await actualUser.save()
+                } catch (error) {
+                    throw new InternalServerErrorException()
+                }   
+            } else {
+                throw new UnauthorizedException()
+            }
+            
+        }
+    }
 
     async hashPassword (password: string, salt: string): Promise<string> {
         return bcrypt.hash(password, salt)
