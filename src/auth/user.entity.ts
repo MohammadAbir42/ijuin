@@ -1,6 +1,7 @@
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, Unique } from "typeorm";
+import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, Unique, OneToOne } from "typeorm";
 import * as bcrypt from 'bcrypt'
 import { UserRole } from "./userRole.enum";
+import { UserData } from "src/user-data/userData.entity";
 
 
 @Entity()
@@ -23,6 +24,9 @@ export class User extends BaseEntity {
 
     @Column()
     role: UserRole;
+
+    @OneToOne(type => UserData, userData => userData.user)
+    userData: UserData
 
 
     async validatePassword(password: string): Promise<boolean> {

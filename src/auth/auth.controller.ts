@@ -1,4 +1,4 @@
-import { Controller, Logger, Post, Body, ValidationPipe } from '@nestjs/common';
+import { Controller, Logger, Post, Body, ValidationPipe, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthCredentialsDto } from './dto/authCredentials.dto';
 import { GetSignUpToken } from './getSignupToken.decorator';
@@ -6,6 +6,7 @@ import { AuthSignUpCredentialsDto } from './dto/authSIgnUpCredentials.dto';
 import { AuthPasswordResetDto } from './dto/authPasswordResetDto.dto';
 import { AuthPasswordChangeDto } from './dto/authPasswordChangeDto.dto';
 import { GetUser } from './getUser.decorator';
+import { AuthGuard } from '@nestjs/passport';
 import { User } from './user.entity';
 
 @Controller('auth')
@@ -39,10 +40,11 @@ export class AuthController {
     }
 
     @Post('/password/change')
+    @UseGuards(AuthGuard())
     async changePassword (
         @Body(ValidationPipe) authPasswordChangeDTO: AuthPasswordChangeDto,
-        @GetUser() token: string
+        @GetUser() user: User
     ): Promise<void> {
-        return this.authService.changePassword(authPasswordChangeDTO, token)
+        return this.authService.changePassword(authPasswordChangeDTO, user)
     }
 }

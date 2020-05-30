@@ -11,6 +11,7 @@ import { AuthPasswordResetDto } from './dto/authPasswordResetDto.dto';
 import { AuthPasswordChangeDto } from './dto/authPasswordChangeDto.dto';
 import { User } from './user.entity';
 
+
 @Injectable()
 export class AuthService {
     constructor (
@@ -22,6 +23,7 @@ export class AuthService {
 
     async preSignUp(authSignUpCredDTO: AuthSignUpCredentialsDto): Promise<{ accessToken: string }> {
         const { email, username, password } = authSignUpCredDTO
+        
         
         if (!await this.userRepository.findOne({ email }) && !await this.userRepository.findOne({ username })) {
             const payload: JwtSignUpPayload = { email, username, password }
@@ -95,8 +97,8 @@ export class AuthService {
         }
     }
 
-    async changePassword(authPasswordChangeDTO: AuthPasswordChangeDto, token: string): Promise<void> {
-        const user = this.jwtService.verify(token)
+    async changePassword(authPasswordChangeDTO: AuthPasswordChangeDto, user: User): Promise<void> {
+        // const user = this.jwtService.verify(token)
         return this.userRepository.changePassword(authPasswordChangeDTO, user)
     }
 }

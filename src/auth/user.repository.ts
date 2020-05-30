@@ -44,24 +44,17 @@ export class UserRepository extends Repository<User> {
 
     async changePassword (authPasswordChangeDTO: AuthPasswordChangeDto, user: User): Promise<void> {
         const { password, newPassword } = authPasswordChangeDTO
-        const { username } = user
-        const actualUser = await this.findOne({ username })
-        if (!actualUser) {
-            throw new UnauthorizedException()
-        } else {
-            const oldPassword = actualUser.password
-            const getPassword = await this.hashPassword(password, actualUser.salt)
-            if (oldPassword === getPassword) {
-                actualUser.password = await this.hashPassword(newPassword, actualUser.salt)
-                try {
-                    await actualUser.save()
-                } catch (error) {
-                    throw new InternalServerErrorException()
-                }   
-            } else {
-                throw new UnauthorizedException()
+        
+        const getPassword = await this.hashPassword(password, user.salt)
+        if (user.password === getPassword) {
+            user.password = await this.hashPassword(newPassword, user.salt)
+            try {
+                await user.save()
+            } catch (error) {
+                throw new InternalServerErrorException()
             }
-            
+        } else {
+            throw new UnauthorizedException()
         }
     }
 

@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfig } from './config/typeOrm.config';
 import { MailerModule } from '@nestjs-modules/mailer'
 import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter'
+import { UserDataModule } from './user-data/user-data.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter'
       }),
     }),
     AuthModule,
+    UserDataModule,
   ],
 })
 export class AppModule {}
