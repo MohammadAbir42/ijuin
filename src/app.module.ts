@@ -5,6 +5,15 @@ import { typeOrmConfig } from './config/typeOrm.config';
 import { MailerModule } from '@nestjs-modules/mailer'
 import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter'
 import { UserDataModule } from './user-data/user-data.module';
+import { StoryModule } from './story/story.module';
+import { SubjectModule } from './subject/subject.module';
+import { ReplyModule } from './reply/reply.module';
+import { QuestionModule } from './question/question.module';
+import { CommentModule } from './comment/comment.module';
+import { PollModule } from './poll/poll.module';
+import { ClassroomModule } from './classroom/classroom.module';
+import { PostModule } from './post/post.module';
+import { OrganizationModule } from './organization/organization.module';
 
 @Module({
   imports: [
@@ -26,6 +35,15 @@ import { UserDataModule } from './user-data/user-data.module';
     }),
     AuthModule,
     UserDataModule,
+    StoryModule,
+    SubjectModule,
+    ReplyModule,
+    QuestionModule,
+    CommentModule,
+    PollModule,
+    ClassroomModule,
+    PostModule,
+    OrganizationModule,
   ],
 })
 export class AppModule {}
