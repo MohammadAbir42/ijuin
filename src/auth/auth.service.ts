@@ -10,6 +10,7 @@ import { JwtSignUpPayload } from './jwt/jwtSignUpPayload.interface';
 import { AuthPasswordResetDto } from './dto/authPasswordResetDto.dto';
 import { AuthPasswordChangeDto } from './dto/authPasswordChangeDto.dto';
 import { User } from './user.entity';
+import { AuthUsernameDTO } from './dto/authUsernameDto.dto';
 
 
 @Injectable()
@@ -20,6 +21,18 @@ export class AuthService {
         private jwtService: JwtService,
         private readonly mailerService: MailerService,
     ) {}
+
+    async usernameCheck(authUsername: AuthUsernameDTO): Promise<boolean> {
+        const { username } = authUsername
+        const user = await this.userRepository.findOne({ username })
+        
+
+        if (user) {
+            throw new ConflictException()
+        } else {
+            return true
+        }
+    }
 
     async preSignUp(authSignUpCredDTO: AuthSignUpCredentialsDto): Promise<{ accessToken: string }> {
         const { email, username, password } = authSignUpCredDTO
@@ -34,8 +47,15 @@ export class AuthService {
                 subject: 'Testing NestJs Mailer Service',
                 text: `${username}'s access token: ${{accessToken}}`,
                 html: `<h3>${username}'s access token: </h3><p>${accessToken}</p>`
-            }).then().catch()
-            return {accessToken}
+            //          <p>Please use the following link to activate your acccount:</p>
+            //         < p > ${ process.env.CLIENT_URL } / account / activate / ${ token } < /p>
+            //         < hr />
+            // <p>This email may contain sensetive information < /p>
+            }).then().catch((e) => {
+                console.log(e);
+                
+            })
+            return {accessToken}// don't need to send it
         } else {
             throw new ConflictException()
         }

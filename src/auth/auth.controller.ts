@@ -8,11 +8,17 @@ import { AuthPasswordChangeDto } from './dto/authPasswordChangeDto.dto';
 import { GetUser } from './getUser.decorator';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from './user.entity';
+import { AuthUsernameDTO } from './dto/authUsernameDto.dto';
 
 @Controller('auth')
 export class AuthController {
     private logger = new Logger('AuthController')
     constructor ( private authService: AuthService) {}
+
+    @Post('/presignup/checkUsername')
+    async checkUsername(@Body(ValidationPipe) authUsername: AuthUsernameDTO): Promise<boolean> {
+        return this.authService.usernameCheck(authUsername)
+    }
 
     @Post('/presignup')
     async preSignUp(@Body(ValidationPipe) authSignUpDTO: AuthSignUpCredentialsDto): Promise<{ accessToken: string }> {

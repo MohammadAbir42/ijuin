@@ -9,7 +9,7 @@ export class AuthSignUpCredentialsDto {
 
     @IsNotEmpty()
     @IsString()
-    @MinLength(6)
+    @MinLength(2)
     @MaxLength(20)
     username: string;
 
