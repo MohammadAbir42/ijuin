@@ -11,6 +11,7 @@ import { AuthPasswordResetDto } from './dto/authPasswordResetDto.dto';
 import { AuthPasswordChangeDto } from './dto/authPasswordChangeDto.dto';
 import { User } from './user.entity';
 import { AuthUsernameDTO } from './dto/authUsernameDto.dto';
+import { AuthEmailDTO } from './dto/emailCheck.dto';
 
 
 @Injectable()
@@ -28,7 +29,18 @@ export class AuthService {
         
 
         if (user) {
-            throw new ConflictException()
+            throw new ConflictException("This username already exists!!")
+        } else {
+            return true
+        }
+    }
+
+    async emailCheck(authEmail: AuthEmailDTO): Promise<boolean> {
+        const { email } = authEmail
+        const user = await this.userRepository.findOne({ email })
+
+        if (user) {
+            throw new ConflictException("This Email already exists!!")
         } else {
             return true
         }

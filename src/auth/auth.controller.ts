@@ -9,6 +9,7 @@ import { GetUser } from './getUser.decorator';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from './user.entity';
 import { AuthUsernameDTO } from './dto/authUsernameDto.dto';
+import { AuthEmailDTO } from './dto/emailCheck.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -18,6 +19,11 @@ export class AuthController {
     @Post('/presignup/checkUsername')
     async checkUsername(@Body(ValidationPipe) authUsername: AuthUsernameDTO): Promise<boolean> {
         return this.authService.usernameCheck(authUsername)
+    }
+
+    @Post('/presignup/checkEmail')
+    async checkEmail(@Body(ValidationPipe) authEmail: AuthEmailDTO): Promise<boolean> {
+        return this.authService.emailCheck(authEmail)
     }
 
     @Post('/presignup')
