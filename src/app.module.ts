@@ -22,7 +22,7 @@ import { OrganizationModule } from './organization/organization.module';
       useFactory: () => ({
         transport: 'smtps://abirhassan142442@gmail.com:rxubrmwqsvdxifir@smtp.gmail.com',
         defaults: {
-          from: `'Ijuin' website <abirhassan>`
+          from: `'Ijuin' website <abirhassan142442@gmail.com>`
         },
         template: {
           dir: __dirname + '/templates',

@@ -46,7 +46,7 @@ export class AuthService {
         }
     }
 
-    async preSignUp(authSignUpCredDTO: AuthSignUpCredentialsDto): Promise<{ accessToken: string }> {
+    async preSignUp(authSignUpCredDTO: AuthSignUpCredentialsDto): Promise<boolean> {
         const { email, username, password } = authSignUpCredDTO
         
         
@@ -58,16 +58,15 @@ export class AuthService {
                 from: 'abirhassan142442@gmail.com',
                 subject: 'Testing NestJs Mailer Service',
                 text: `${username}'s access token: ${{accessToken}}`,
-                html: `<h3>${username}'s access token: </h3><p>${accessToken}</p>`
-            //          <p>Please use the following link to activate your acccount:</p>
-            //         < p > ${ process.env.CLIENT_URL } / account / activate / ${ token } < /p>
-            //         < hr />
-            // <p>This email may contain sensetive information < /p>
+                html: `<h3>Please use the following link to activate your acccount:</h3>
+                    <p> ${ process.env.CLIENT_URL}/account/activate/${accessToken}</p>
+                    <hr/>
+                    <p>This email may contain sensetive information</p></p>`
             }).then().catch((e) => {
                 console.log(e);
                 
             })
-            return {accessToken}// don't need to send it
+            return true// don't need to send it
         } else {
             throw new ConflictException()
         }

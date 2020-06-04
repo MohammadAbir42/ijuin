@@ -27,7 +27,7 @@ export class AuthController {
     }
 
     @Post('/presignup')
-    async preSignUp(@Body(ValidationPipe) authSignUpDTO: AuthSignUpCredentialsDto): Promise<{ accessToken: string }> {
+    async preSignUp(@Body(ValidationPipe) authSignUpDTO: AuthSignUpCredentialsDto): Promise<boolean> {
         return this.authService.preSignUp(authSignUpDTO)
     }
 
