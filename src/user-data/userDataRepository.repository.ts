@@ -3,6 +3,7 @@ import { UserData } from "./userData.entity";
 import { User } from "src/auth/user.entity";
 import { NotFoundException, UnauthorizedException, InternalServerErrorException } from "@nestjs/common";
 import { UpdateProfileDTO } from "./dto/updateProfileDto.dto";
+import { UpdateFirstNameDto } from "./dto/updateFirstNameDto.dto";
 
 @EntityRepository(UserData)
 export class UserDataRepository extends Repository<UserData> {
@@ -28,6 +29,20 @@ export class UserDataRepository extends Repository<UserData> {
             throw new NotFoundException()
         } else {
             return profile
+        }
+    }
+
+    async updateFirstName(firstNameDto: UpdateFirstNameDto, user: User): Promise<boolean> {
+        const { username } = user
+        const {firstName} = firstNameDto
+        const profile = null
+        if (!profile) {
+            throw new NotFoundException(`User with Username: '${username}' does not exists!!`)
+            return false
+        } else {
+            profile.firstName = firstName
+            await profile.save()
+            return true
         }
     }
 

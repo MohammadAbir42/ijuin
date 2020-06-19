@@ -5,6 +5,7 @@ import { User } from 'src/auth/user.entity';
 import { GetUserDataDec } from '../auth/getUserData.decorator';
 import { UserData } from './userData.entity';
 import { UpdateProfileDTO } from './dto/updateProfileDto.dto';
+import { UpdateFirstNameDto } from './dto/updateFirstNameDto.dto';
 
 @Controller('user-data')
 @UseGuards(AuthGuard())
@@ -19,6 +20,16 @@ export class UserDataController {
     @Get()
     async getUserData(@GetUserDataDec() user: User): Promise<UserData> {
         return this.userDataService.getUserData(user)
+    }
+
+    @Patch('/firstName')
+    async changeFirstName(
+        @Body(ValidationPipe) firstNameDTO: UpdateFirstNameDto,
+        @GetUserDataDec() user: User
+    ): Promise<boolean> {
+        console.log('connected');
+        
+        return this.userDataService.updateFN(firstNameDTO, user)
     }
 
     @Patch()
